@@ -1,7 +1,7 @@
 package com.example.model;
 
 public enum LogType {
-  FRONTEND,
+  LOGIN,
   PAYMENT,
   BASKET
 }

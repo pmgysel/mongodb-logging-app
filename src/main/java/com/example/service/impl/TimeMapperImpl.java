@@ -10,6 +10,6 @@ public class TimeMapperImpl implements TimeMapper {
 
   @Override
   public LocalDateTime toTime(String time) {
-    return null;
+    return LocalDateTime.parse(time);
   }
 }

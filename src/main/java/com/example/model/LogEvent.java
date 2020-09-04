@@ -1,23 +1,15 @@
 package com.example.model;
 
+import lombok.Data;
+
 import java.util.Map;
 
+@Data
 public final class LogEvent {
   public static final String LOG_ID = "_id";
-  public static final String LOG_TIME = "createDate";
-  public static final String APP_TYPE = "appType";
+  public static final String LOG_TIME = "_createDate";
+  public static final String APP_TYPE = "_appType";
 
-  private Map<String, String> logProps;
+  private final Map<String, String> logProps;
 
-  public LogEvent(Map<String, String> logProps) {
-    this.logProps = logProps;
-  }
-
-  public Map<String, String> getLogProps() {
-    return logProps;
-  }
-
-  public void setLogProps(Map<String, String> logProps) {
-    this.logProps = logProps;
-  }
 }
