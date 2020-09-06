@@ -2,13 +2,13 @@ package com.example.controller;
 
 import com.example.db.MongoDbService;
 import com.example.model.LogEvent;
+import com.example.model.LogId;
 import com.example.model.LogType;
 import com.example.service.DocumentToLogMapper;
-import com.example.service.JsonToLogMapper;
 import com.example.service.RandomLog;
-import com.example.service.TimeMapper;
 import lombok.AllArgsConstructor;
 import lombok.val;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,18 +16,14 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 @RestController
 @AllArgsConstructor
 public class LogRestController {
 
   private final MongoDbService mongoDbService;
   private final DocumentToLogMapper documentToLogMapper;
-  private final JsonToLogMapper jsonToLogMapper;
   private final RandomLog randomLog;
-  private final TimeMapper timeMapper;
 
-  // todo be able to gracefully handle case where id is ill formatted
   @RequestMapping(method = RequestMethod.GET, path = "/api/log/{id}")
   public ResponseEntity<LogEvent> getLogById(@PathVariable(value = "id") String id) {
     return mongoDbService.findById(id)
@@ -36,28 +32,28 @@ public class LogRestController {
         .orElse(ResponseEntity.notFound().build());
   }
 
-  // TODO: show comment in swagger ui: input is json without id, app, time
-  @RequestMapping(method = RequestMethod.POST, path = "/api/log/fromJson")
-  public ResponseEntity<String> createLogFromJson(
-      @RequestBody String logJson,
-      @RequestParam String app
+  @RequestMapping(method = RequestMethod.POST, path = "/api/log")
+  public ResponseEntity<LogId> createLog(
+      @RequestBody LogEvent log,
+      @RequestParam LogType app
   ) {
-    return jsonToLogMapper.fromJson(logJson)
+    return Optional.of(log)
         .map(documentToLogMapper::toDocument)
         .map(doc -> mongoDbService.store(doc, app))
         .map(ResponseEntity::ok)
         .orElse(ResponseEntity.badRequest().build());
   }
 
-  // TODO: use localdatetime
   @RequestMapping(method = RequestMethod.GET, path = "/api/log/dateRange")
   public ResponseEntity<List<LogEvent>> getLogByDateRange(
-      @RequestParam(value = "from") String from,
-      @RequestParam(value = "to") String to
+      @RequestParam(value = "from")
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+          LocalDateTime from,
+      @RequestParam(value = "to")
+      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+          LocalDateTime to
   ) {
-    LocalDateTime fromTime = timeMapper.toTime(from);
-    LocalDateTime toTime = timeMapper.toTime(to);
-    List<LogEvent> results = mongoDbService.findInTimeRange(fromTime, toTime)
+    List<LogEvent> results = mongoDbService.findInTimeRange(from, to)
         .stream()
         .map(documentToLogMapper::toLog)
         .collect(Collectors.toList());
@@ -92,7 +88,7 @@ public class LogRestController {
 
   @RequestMapping(method = RequestMethod.GET, path = "/api/log/searchByApp/{app}")
   public ResponseEntity<List<LogEvent>> getLogByApp(
-      @RequestParam(value = "app") String app
+      @RequestParam(value = "app") LogType app
   ) {
     List<LogEvent> results = mongoDbService.findByApp(app)
         .stream()
@@ -102,10 +98,10 @@ public class LogRestController {
   }
 
   @RequestMapping(method = RequestMethod.POST, path = "/api/log/random")
-  public ResponseEntity<String> createLogRandom(@RequestParam LogType appType) {
+  public ResponseEntity<LogId> createLogRandom(@RequestParam LogType appType) {
     val random = randomLog.randomLog(appType);
     val doc = documentToLogMapper.toDocument(random);
-    val id = mongoDbService.store(doc, appType.toString());
+    val id = mongoDbService.store(doc, appType);
     return ResponseEntity.ok(id);
   }
 

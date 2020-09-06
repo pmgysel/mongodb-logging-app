@@ -4,12 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class Application {
-
+public class LogCaptureApp {
   public static void main(String[] args) {
-
-    new SpringApplication(Application.class).run();
-
+    new SpringApplication(LogCaptureApp.class).run();
   }
-
 }
