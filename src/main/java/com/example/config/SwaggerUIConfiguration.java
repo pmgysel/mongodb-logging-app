@@ -12,10 +12,10 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @Configuration
 @EnableSwagger2
-public class APIInfoConfiguration {
+public class SwaggerUIConfiguration {
 
   @Bean
-  public Docket orgApi() {
+  public Docket apiDocu() {
     return new Docket(DocumentationType.SWAGGER_2)
         .apiInfo(apiInfo())
         .select()

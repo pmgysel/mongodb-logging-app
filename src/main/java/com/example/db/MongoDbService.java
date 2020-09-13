@@ -32,17 +32,12 @@ public class MongoDbService {
   }
 
   public Optional<Document> findById(String id) {
-    val result = new ArrayList<Document>();
-    Try.of(() -> new ObjectId(id)).toOption().toJavaOptional()
-        .ifPresent(objId -> findById(objId, result));
-    return result.size() == 1
-        ? Optional.of(result.get(0))
-        : Optional.empty();
-
+    return Try.of(() -> new ObjectId(id)).toOption().toJavaOptional()
+        .flatMap(this::findById);
   }
 
-  private void findById(ObjectId id, ArrayList<Document> results) {
-    mongoCollection.find(eq(LogEvent.LOG_ID, id)).into(results);
+  private Optional<Document> findById(ObjectId id) {
+    return Optional.ofNullable(mongoCollection.find(eq(LogEvent.LOG_ID, id)).first());
   }
 
   public List<Document> findInTimeRange(LocalDateTime from, LocalDateTime to) {
