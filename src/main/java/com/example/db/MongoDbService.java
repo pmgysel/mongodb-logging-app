@@ -3,6 +3,7 @@ package com.example.db;
 import com.example.model.LogEvent;
 import com.example.model.LogId;
 import com.example.model.LogType;
+import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
 import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
@@ -62,5 +63,9 @@ public class MongoDbService {
     val result = new ArrayList<Document>();
     mongoCollection.find(eq(LogEvent.APP_TYPE, app.toString())).into(result);
     return result;
+  }
+
+  public void removeAll() {
+    mongoCollection.deleteMany(new BasicDBObject());
   }
 }
